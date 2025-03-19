@@ -1,17 +1,37 @@
-FROM python:3.12-slim-bookworm AS base
+FROM python:3.12-slim AS base
+
+WORKDIR /opt
+
 FROM base AS builder
-COPY --from=ghcr.io/astral-sh/uv:0.4.9 /uv /bin/uv
-ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy
-WORKDIR /app
-COPY uv.lock pyproject.toml /app/
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
+
+ENV UV_LINK_MODE=copy
+ENV UV_COMPILE_BYTECODE=1
+
+COPY ./pyproject.toml ./uv.lock ./README.md ./
+
+# Install dependencies
 RUN --mount=type=cache,target=/root/.cache/uv \
-  uv sync --frozen --no-install-project --no-dev
-COPY . /app
-RUN --mount=type=cache,target=/root/.cache/uv \
-  uv sync --frozen --no-dev
-FROM base
-WORKDIR /app
-COPY --from=builder /app /app
-ENV PATH="/app/.venv/bin:$PATH"
-EXPOSE 8000
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    uv sync --frozen --no-install-project --no-editable
+
+FROM base AS runtime
+
+# ARG VERSION
+# ENV VERSION=${VERSION}
+
+COPY --from=builder /opt/.venv /opt/.venv
+
+COPY ./src ./src
+COPY ./entrypoint.sh /entrypoint.sh
+COPY ./cmd.sh /cmd.sh
+
+RUN chmod +x /entrypoint.sh
+RUN chmod +x /cmd.sh
+
+ENV PATH=/opt:/opt/.venv/bin:${PATH}
+ENV PYTHONPATH=/opt
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["python", "src/runserver.py"]
