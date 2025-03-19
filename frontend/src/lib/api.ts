@@ -1,6 +1,13 @@
 import { Todo, TodoCreateInput, TodoUpdateInput } from '@/types/todo';
 
-const API_URL = 'http://localhost:8000';
+// Get the API URL from window.ENV if available, otherwise fallback to development URL
+const API_URL = typeof window !== 'undefined' && window.ENV?.API_URL
+  ? window.ENV.API_URL
+  : 'http://localhost:8000';
+
+// Log the API URL for debugging purposes
+console.log('API URL being used:', API_URL);
+console.log('window.ENV:', typeof window !== 'undefined' ? window.ENV : 'not available');
 
 export const api = {
   async getTodos(): Promise<Todo[]> {

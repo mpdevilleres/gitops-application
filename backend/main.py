@@ -9,7 +9,8 @@ from datetime import datetime
 app = FastAPI(
     title="TODO List API",
     description="A simple TODO list API built with FastAPI",
-    version="0.1.0"
+    version="0.1.0",
+    root_path="/api"
 )
 
 # Add CORS middleware
