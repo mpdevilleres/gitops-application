@@ -1,17 +1,17 @@
 import { Todo, TodoCreateInput, TodoUpdateInput } from '@/types/todo';
 
 // Get the API URL from window.ENV if available, otherwise fallback to development URL
-const API_URL = typeof window !== 'undefined' && window.ENV?.API_URL
-  ? window.ENV.API_URL
+const API_BASE_URL = typeof window !== 'undefined' && window.ENV?.API_BASE_URL
+  ? window.ENV.API_BASE_URL
   : 'http://localhost:8000';
 
 // Log the API URL for debugging purposes
-console.log('API URL being used:', API_URL);
+console.log('API URL being used:', API_BASE_URL);
 console.log('window.ENV:', typeof window !== 'undefined' ? window.ENV : 'not available');
 
 export const api = {
   async getTodos(): Promise<Todo[]> {
-    const response = await fetch(`${API_URL}/todos`);
+    const response = await fetch(`${API_BASE_URL}/api/v1/todos`);
     if (!response.ok) {
       throw new Error('Failed to fetch todos');
     }
@@ -19,7 +19,7 @@ export const api = {
   },
 
   async getTodo(id: string): Promise<Todo> {
-    const response = await fetch(`${API_URL}/todos/${id}`);
+    const response = await fetch(`${API_BASE_URL}/api/v1/todos/${id}`);
     if (!response.ok) {
       throw new Error('Failed to fetch todo');
     }
@@ -27,7 +27,7 @@ export const api = {
   },
 
   async createTodo(todo: TodoCreateInput): Promise<Todo> {
-    const response = await fetch(`${API_URL}/todos`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/todos`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -41,7 +41,7 @@ export const api = {
   },
 
   async updateTodo(id: string, todo: TodoUpdateInput): Promise<Todo> {
-    const response = await fetch(`${API_URL}/todos/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/todos/${id}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -55,7 +55,7 @@ export const api = {
   },
 
   async deleteTodo(id: string): Promise<void> {
-    const response = await fetch(`${API_URL}/todos/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/todos/${id}`, {
       method: 'DELETE',
     });
     if (!response.ok) {

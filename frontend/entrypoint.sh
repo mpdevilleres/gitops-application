@@ -7,15 +7,15 @@ env
 echo "========================="
 
 # Debugging message
-echo "Generating env.js file with API_URL"
+echo "Generating env.js file with API_BASE_URL"
 
 # Generate env.js with runtime environment variables
-if [ -n "$API_URL" ]; then
-  echo "API_URL is set to: $API_URL"
-  echo "window.ENV = { API_URL: \"$API_URL\" };" > /usr/share/nginx/html/env.js
+if [ -n "$API_BASE_URL" ]; then
+  echo "API_BASE_URL is set to: $API_BASE_URL"
+  echo "window.ENV = { API_BASE_URL: \"$API_BASE_URL\" };" > /usr/share/nginx/html/env.js
 else
-  echo "API_URL is not set, using default value: /api"
-  echo "window.ENV = { API_URL: \"/api\" };" > /usr/share/nginx/html/env.js
+  echo "API_BASE_URL is not set, using default value: /api"
+  echo "window.ENV = { API_BASE_URL: \"/\" };" > /usr/share/nginx/html/env.js
 fi
 
 # Display the contents of the generated env.js file

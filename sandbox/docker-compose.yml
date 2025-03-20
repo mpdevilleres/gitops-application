@@ -1,0 +1,83 @@
+name: todo
+
+networks:
+  todo-network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.238.0/24
+          gateway: 172.20.238.1
+
+x-backend-common: &x-backend-common
+  # image: "${IMAGE_REGISTRY}/${REPOSITORY}-backend:${BACKEND_TAG:-main}"
+  build:
+    context: ../backend
+    dockerfile: Dockerfile
+  volumes:
+    - ./jwt_private_key.pem:/opt/jwt_private_key.pem
+    - ./jwt_public_key.pem:/opt/jwt_public_key.pem
+  networks:
+    - todo-network
+
+# volumes:
+#   timescale-data: { }
+#   redis-data: { }
+#   minio-data: { }
+
+services:
+  # START SYSTEM DEPENDENCIES
+  # ====================================================================================================================
+
+  # ====================================================================================================================
+  # END SYSTEM DEPENDENCIES
+
+  # START COMPONENTS
+  # ====================================================================================================================
+  localhost.local:
+    image: "traefik:v2.9"
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.local.address=:10000"
+    ports:
+      - "80:80"
+      - "8080:8080"
+      - "10000:10000"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    networks:
+      - todo-network
+
+  frontend:
+  # image: "${IMAGE_REGISTRY}/${REPOSITORY}-frontend:${FRONTEND_TAG:-main}"
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    environment:
+        - API_BASE_URL=http://localhost:10000
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.local-frontend.service=local-frontend"
+      - "traefik.http.routers.local-frontend.rule=PathPrefix(`/`)"
+      - "traefik.http.routers.local-frontend.entrypoints=local"
+      - "traefik.http.services.local-frontend.loadbalancer.server.port=80"
+    networks:
+      - todo-network
+
+  backend-api:
+    <<: *x-backend-common
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.local-backend.service=local-backend"
+      - "traefik.http.routers.local-backend.rule=PathPrefix(`/api/v1`)"
+      - "traefik.http.routers.local-backend.entrypoints=local"
+      - "traefik.http.services.local-backend.loadbalancer.server.port=8000"
+
+  # backend-worker:
+  #   <<: *x-backend-common
+  #   command: bash -c "app check-system-dependencies && arq worker.WorkerSettings"
+
+  # ====================================================================================================================
+  # END COMPONENTS

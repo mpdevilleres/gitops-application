@@ -10,7 +10,9 @@ app = FastAPI(
     title="TODO List API",
     description="A simple TODO list API built with FastAPI",
     version="0.1.0",
-    root_path="/api"
+    docs_url="/api/v1/docs",
+    redoc_url="/api/v1/redoc",
+    openapi_url="/api/v1/openapi.json"
 )
 
 # Add CORS middleware
@@ -49,18 +51,14 @@ def get_todo_by_id(todo_id: str):
     return todos[todo_id]
 
 # Routes
-@app.get("/", tags=["Root"])
-async def read_root():
-    return {"message": "Welcome to the TODO List API"}
-
-@app.get("/todos", response_model=List[Todo], tags=["Todos"])
+@app.get("/api/v1/todos", response_model=List[Todo], tags=["Todos"])
 async def get_todos():
     """
     Get all todos
     """
     return list(todos.values())
 
-@app.post("/todos", response_model=Todo, status_code=status.HTTP_201_CREATED, tags=["Todos"])
+@app.post("/api/v1/todos", response_model=Todo, status_code=status.HTTP_201_CREATED, tags=["Todos"])
 async def create_todo(todo: TodoCreate):
     """
     Create a new todo
@@ -78,14 +76,14 @@ async def create_todo(todo: TodoCreate):
     todos[todo_id] = new_todo
     return new_todo
 
-@app.get("/todos/{todo_id}", response_model=Todo, tags=["Todos"])
+@app.get("/api/v1/todos/{todo_id}", response_model=Todo, tags=["Todos"])
 async def get_todo(todo_id: str):
     """
     Get a specific todo by ID
     """
     return get_todo_by_id(todo_id)
 
-@app.patch("/todos/{todo_id}", response_model=Todo, tags=["Todos"])
+@app.patch("/api/v1/todos/{todo_id}", response_model=Todo, tags=["Todos"])
 async def update_todo(todo_id: str, todo_update: TodoBase):
     """
     Update a todo by ID
@@ -99,7 +97,7 @@ async def update_todo(todo_id: str, todo_update: TodoBase):
     todo["updated_at"] = datetime.now()
     return todo
 
-@app.delete("/todos/{todo_id}", status_code=status.HTTP_204_NO_CONTENT, tags=["Todos"])
+@app.delete("/api/v1/todos/{todo_id}", status_code=status.HTTP_204_NO_CONTENT, tags=["Todos"])
 async def delete_todo(todo_id: str):
     """
     Delete a todo by ID
