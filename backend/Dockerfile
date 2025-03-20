@@ -24,14 +24,8 @@ FROM base AS runtime
 COPY --from=builder /opt/.venv /opt/.venv
 
 COPY ./src ./src
-COPY ./entrypoint.sh /entrypoint.sh
-COPY ./cmd.sh /cmd.sh
-
-RUN chmod +x /entrypoint.sh
-RUN chmod +x /cmd.sh
 
 ENV PATH=/opt:/opt/.venv/bin:${PATH}
 ENV PYTHONPATH=/opt
 
-ENTRYPOINT ["/entrypoint.sh"]
-CMD ["python", "src/runserver.py"]
+CMD ["python", "src/main.py"]
